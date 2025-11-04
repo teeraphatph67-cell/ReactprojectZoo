@@ -7,6 +7,7 @@ import Register from './pages/register.jsx'
 import Team from "./pages/Team.jsx";
 import Project from "./pages/Project.jsx";
 import Calendar from "./pages/Calendar.jsx";
+import Ubu from "./pages/ubu.jsx"
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/Team" element={<Team />} />
         <Route path="/Project" element={<Project />} />
         <Route path="/Calendar" element={<Calendar />} />
+        <Route path="/ubu" element={<Ubu/>} />
       </Routes>
     </BrowserRouter>
     </>
