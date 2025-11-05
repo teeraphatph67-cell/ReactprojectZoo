@@ -3,7 +3,11 @@ import ubuzoo from "../../assets/ubuzoo.webp";
 
 const cards = [
   { id: 1, name: "BUB ZOO", image: ubuzoo },
-  // { id: 2, name: "test", image: "#" },
+  { id: 2, name: "", image: ubuzoo },
+  { id: 3, name: "", image: ubuzoo },
+  { id: 4, name: "", image: ubuzoo },
+  { id: 5, name: "", image: ubuzoo },
+  { id: 6, name: "", image: ubuzoo },
 ];
 
 export default function Hero() {
@@ -36,8 +40,11 @@ export default function Hero() {
           </div>
         ))}
       </div>
+<<<<<<< HEAD
+=======
 
   
+>>>>>>> 4f25bcf2c82a79d7e27cc045ecb091cf7d255037
     </section>
   );
 }
