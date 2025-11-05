@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:127": "vite --host 127.0.0.1 --port 5173",
     "build": "vite build",
     "lint": "eslint .",
     "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch",
     "preview": "vite preview",
     "proxy": "http://localhost:8000"
-
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
@@ -31,6 +31,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
-    "vite": "^7.1.7"
+    "vite": "^7.1.12"
   }
 }

@@ -40,6 +40,11 @@ export default function Hero() {
           </div>
         ))}
       </div>
+<<<<<<< HEAD
+=======
+
+  
+>>>>>>> 4f25bcf2c82a79d7e27cc045ecb091cf7d255037
     </section>
   );
 }
