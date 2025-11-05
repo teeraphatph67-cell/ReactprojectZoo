@@ -3,7 +3,11 @@ import ubuzoo from "../../assets/ubuzoo.webp";
 
 const cards = [
   { id: 1, name: "BUB ZOO", image: ubuzoo },
-  // { id: 2, name: "test", image: "#" },
+  { id: 2, name: "", image: ubuzoo },
+  { id: 3, name: "", image: ubuzoo },
+  { id: 4, name: "", image: ubuzoo },
+  { id: 5, name: "", image: ubuzoo },
+  { id: 6, name: "", image: ubuzoo },
 ];
 
 export default function Hero() {
@@ -34,30 +38,6 @@ export default function Hero() {
             </Link>
             <p className="mt-2 text-white font-semibold">{c.name}</p>
           </div>
-        ))}
-      </div>
-
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-wrap items-center gap-4 z-50">
-        {[
-          {
-            to: "/register",
-            text: "เริ่มต้นใช้งานฟรี",
-            style: "bg-blue-600 hover:bg-blue-500 text-white ring-blue-300",
-          },
-          {
-            to: "/login",
-            text: "เข้าสู่ระบบ",
-            style:
-              "border border-white/20 bg-white/5 hover:bg-white/10 text-slate-100 ring-white/30",
-          },
-        ].map((btn, i) => (
-          <Link
-            key={i}
-            to={btn.to}
-            className={`inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold shadow-lg focus:outline-none focus:ring-2 ${btn.style}`}
-          >
-            {btn.text}
-          </Link>
         ))}
       </div>
     </section>
