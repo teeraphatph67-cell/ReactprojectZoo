@@ -6,7 +6,7 @@ import Login from './pages/login.jsx'
 import Register from './pages/register.jsx'
 import Edit from "./pages/Edit.jsx";
 import Project from "./pages/Project.jsx";
-import Calendar from "./pages/Calendar.jsx";
+import Addzoo from "./pages/Addzoo.jsx";
 import Ubu from "./pages/ubu.jsx";
 import ZooUbu from './pages/Zooubu.jsx'
 import AddCamera from "./pages/AddCamera.jsx";
@@ -27,7 +27,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/Edit" element={<Edit />} />
         <Route path="/Project" element={<Project />} />
-        <Route path="/Calendar" element={<Calendar />} />
+        <Route path="/Addzoo" element={<Addzoo />} />
         <Route path="/ubu" element={<Ubu/>} />
         <Route path="/ZooUbu" element={<ZooUbu />} />
         <Route path="/AddCamera" element={<AddCamera />} />
