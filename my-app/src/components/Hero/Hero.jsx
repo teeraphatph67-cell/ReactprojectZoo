@@ -1,50 +1,37 @@
+// src/pages/Hero.jsx
 import { Link } from "react-router-dom";
-import ubuzoo from "../../assets/ubuzoo.webp";
-
-const cards = [
-  { id: 1, name: "BUB ZOO", image: ubuzoo },
-  { id: 2, name: "", image: ubuzoo },
-  { id: 3, name: "", image: ubuzoo },
-  { id: 4, name: "", image: ubuzoo },
-  { id: 5, name: "", image: ubuzoo },
-  { id: 6, name: "", image: ubuzoo },
-];
+import { mockZoos } from "../../pages/mockZooData";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen px-6 py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-      {[
-        { top: "-top-24 -left-24", color: "bg-blue-500/30 h-80 w-80" },
-        { top: "-bottom-24 -right-24", color: "bg-indigo-500/30 h-96 w-96" },
-      ].map((b, i) => (
-        <div
-          key={i}
-          className={`absolute ${b.top} ${b.color} rounded-full blur-3xl pointer-events-none`}
-        />
-      ))}
+    <section className="pt-20 px-6 pb-10 max-w-7xl mx-auto">
+      <h1 className="text-4xl font-bold text-black text-center mb-10 drop-shadow-sm">
+        ระบบกล้องสวนสัตว์
+      </h1>
 
-      <div className="mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-4 gap-6 mb-32">
-        {cards.map((c) => (
-          <div
-            key={c.id}
-            className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg hover:scale-105 transition-transform duration-300"
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        {mockZoos.map((zoo) => (
+          <Link
+            key={zoo.id}
+            to={`/zoo/${zoo.id}`}
+            className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100"
           >
-            <Link to="/ubu">
-              <img
-                src={c.image} //รูป
-                alt={c.name} //=ชื่อ
-                className="w-full h-32 object-cover rounded-lg"
-              />
-            </Link>
-            <p className="mt-2 text-white font-semibold">{c.name}</p>
-          </div>
+            <img
+              src={zoo.image}
+              alt={zoo.name}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-5 text-center">
+              <h2 className="font-semibold text-xl text-gray-800 mb-1">
+                {zoo.name}
+              </h2>
+              <p className="text-gray-500 text-sm">
+                กล้องทั้งหมด {zoo.cameras.length} ตัว
+              </p>
+            </div>
+          </Link>
         ))}
       </div>
-<<<<<<< HEAD
-=======
-
-  
->>>>>>> 4f25bcf2c82a79d7e27cc045ecb091cf7d255037
     </section>
   );
 }
