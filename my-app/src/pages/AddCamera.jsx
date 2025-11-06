@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 
 export default function AddCamera() {
     const [form, setForm] = useState({
         ip_address: '',
-        zoo_name: '',
+        zoo_id: '',
         camera_position: '',
         animal_name: '',
         camera_url: '',
