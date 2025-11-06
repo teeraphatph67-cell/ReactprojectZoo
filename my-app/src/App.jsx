@@ -6,7 +6,6 @@ import Register from "./pages/register.jsx";
 import Edit from "./pages/Edit.jsx";
 import Project from "./pages/Project.jsx";
 import Addzoo from "./pages/Addzoo.jsx";
-import Ubu from "./pages/ubu.jsx";
 import ZooUbu from './pages/Zooubu.jsx'
 import AddCamera from "./pages/AddCamera.jsx";
 import ZooDetail from "./pages/ZooDetail.jsx";
