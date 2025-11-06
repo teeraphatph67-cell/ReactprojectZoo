@@ -1,37 +1,34 @@
-import React from 'react'
 import { Link } from "react-router-dom";
-import ubuzoo from "../assets/ubuzoo.webp";
-
+import camera from "../assets/camera.jpg";
 const cards = [
-  { id: 1, name: "UBU ZOO", image: ubuzoo },
-  // { id: 2, name: "test", image: "#" },
+  { id: 1, name: "สวนสัตว์อุบลราชธานี", image: "../assets/camera.jpg" },
+  { id: 2, name: "สวนสัตว์ขอนแก่น", image: "/images/khonkaen.jpg" },
+  { id: 3, name: "สวนสัตว์เชียงใหม่", image: "/images/chiangmai.jpg" },
 ];
 
 const Edit = () => {
-
-
-
   return (
-  <div class="relative min-h-screen px-6 py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-  <div className="mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-4 gap-6 mb-32">
-        {cards.map((c) => (
-          <div
-            key={c.id}
-            className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg hover:scale-105 transition-transform duration-300"
+    <div className="relative min-h-screen px-6 py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+      <div className="mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-4 gap-6 mb-32">
+        {cards.map((zoo) => (
+          <Link
+            key={zoo.id}
+            to={`/zoo/${zoo.id}`}
+            className="bg-white/10 backdrop-blur-md rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 overflow-hidden"
           >
-            <Link to="/Zooubu">
-              <img
-                src={c.image} //รูป
-                alt={c.name} //=ชื่อ
-                className="w-full h-32 object-cover rounded-lg"
-              />
-            </Link>
-            <p className="mt-2 text-white font-semibold">{c.name}</p>
-          </div>
+            <img
+              src={zoo.image}
+              alt={zoo.name}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-4 text-center text-white">
+              <h2 className="font-semibold text-xl mb-1">{zoo.name}</h2>
+            </div>
+          </Link>
         ))}
       </div>
-</div>
-  )
-}
+    </div>
+  );
+};
 
-export default Edit
+export default Edit;
