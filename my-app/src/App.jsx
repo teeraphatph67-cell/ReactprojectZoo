@@ -10,7 +10,8 @@ import ZooUbu from './pages/Zooubu.jsx'
 import AddCamera from "./pages/AddCamera.jsx";
 import ZooDetail from "./pages/ZooDetail.jsx";
 import CameraDetail from "./pages/CameraDetail.jsx";
-
+import Ggview from "./pages/ggview.jsx";
+import Zooview from "./pages/zooview.jsx";
 function App() {
   return (
     
@@ -26,7 +27,11 @@ function App() {
       <Route path="zooubu" element={<ZooUbu />} />
       <Route path="AddCamera" element={<AddCamera />} />
       <Route path="zoo/:id" element={<ZooDetail />} />
+      <Route path="Ggview" element={<Ggview />} />
+      <Route path="Zooview" element={<Zooview />} />
       <Route path="zoo/:zooId/camera/:cameraId" element={<CameraDetail />} />
+      
+
     </Route>
   </Routes>
 </BrowserRouter>
