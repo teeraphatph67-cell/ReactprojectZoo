@@ -5,40 +5,65 @@ export default function ZooDetail() {
   const { id } = useParams();
   const zoo = mockZoos.find((z) => z.id === Number(id));
 
-  return (
-    <section className="min-h-screen bg-black-100 px-6 py-20">
-      <div className="max-w-5xl mx-auto">
-        <Link to="/" className="text-blue-400 hover:underline text-sm">
-          ← กลับไปหน้าแรก
-        </Link>
-        <h1 className="text-3xl font-bold mb-6 text-center">{zoo.name}</h1>
+  // if (!zoo) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  //       <p className="text-gray-800 text-lg font-semibold">
+  //         ❌ ไม่พบข้อมูลสวนสัตว์นี้
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+  return (
+    <>
+      <div className="max-w-6xl mx-auto">
+        {/* ปุ่มย้อนกลับ */}
+        <div className="mb-6">
+          <Link
+            to="/"
+            className="inline-block text-blue-600 hover:text-blue-800 font-medium transition-colors"
+          >
+            ← กลับไปหน้าแรก
+          </Link>
+        </div>
+
+        {/* ชื่อสวนสัตว์ */}
+        <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">
+          {zoo.name}
+        </h1>
+
+        {/* กล้องทั้งหมด */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {zoo.cameras.map((cam) => (
-            <div
+            <Link
               key={cam.id}
-              className="bg-white/10 rounded-xl p-4 shadow hover:scale-105 transition-transform duration-300"
+              to={`/zoo/${zoo.id}/camera/${cam.id}`}
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-1 duration-300 overflow-hidden border border-gray-200"
             >
-              <Link to={`/zoo/${zoo.id}/camera/${cam.id}`}>
               <img
                 src={zoo.image2}
                 alt={cam.name}
-                className="w-full h-40 object-cover rounded-lg mb-2"
+                className="w-full h-48 object-cover"
               />
-              </Link>
-              <h2 className="font-semibold text-black/90">{cam.name}</h2>
-              <p
-                className={`text-sm font-bold ${
-                  cam.status === "online" ? "text-green-400" : "text-red-400"
-                }`}
-              >
-                <span className="text-black/80 mr-1">สถานะ:</span>
-                {cam.status === "online" ? "กล้องทำงาน" : "ออฟไลน์"}
-              </p>
-            </div>
+              
+              <div className="p-5">
+                <h2 className="font-semibold text-gray-800 text-lg mb-2">
+                   {zoo.name} :  {cam.name}
+                </h2>
+                <p
+                  className={`text-sm font-semibold ${
+                    cam.status === "online" ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  สถานะ:{" "}
+                  {cam.status === "online" ? "🟢 กล้องทำงาน" : "🔴 ออฟไลน์"}
+                </p>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
-    </section>
+    </>
   );
 }
