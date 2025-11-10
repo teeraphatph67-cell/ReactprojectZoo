@@ -42,7 +42,7 @@ export default function ZooDetail() {
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-1 duration-300 overflow-hidden border border-gray-200"
             >
               <img
-                src={zoo.image2}
+                src={zoo.image}
                 alt={cam.name}
                 className="w-full h-48 object-cover"
               />
