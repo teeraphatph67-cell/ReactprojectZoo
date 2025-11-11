@@ -10,6 +10,13 @@ import {
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
+const navigation = [
+  { name: 'Edit', href: '/Edit', current: true },
+  { name: 'AddCamera', href: '/AddCamera', current: false },
+  { name: 'CheckApi', href: '/CheckApi', current: false },
+]
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");

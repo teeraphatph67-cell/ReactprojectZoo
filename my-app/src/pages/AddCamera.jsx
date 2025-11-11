@@ -3,18 +3,19 @@ import { useEffect, useState } from "react";
 export default function AddCamera() {
   const [form, setForm] = useState({
     ip_address: "",
-    zoo_id: "",              // เลือกจาก <select>
+    zoo_id: "",              // ✅ เก็บค่า id จาก API2 แล้วส่งให้ backend เป็น zoo_id
     camera_position: "",
     animal_name: "",
     camera_url: "",
   });
 
-  const [zooList, setZooList] = useState([]);   // รายการสวนสัตว์จาก /Getzoo
-  const [message, setMessage] = useState(null); // ข้อความสำเร็จ
-  const [error, setError] = useState(null);     // ข้อความผิดพลาดรวม
-  const [fieldErrors, setFieldErrors] = useState({}); // error รายช่อง
-  const [loading, setLoading] = useState(false);      // กดบันทึก
-  const [loadingZoo, setLoadingZoo] = useState(true); // โหลดรายการสวนสัตว์
+  // ✅ โครงสร้างจริงจาก api_2 คือ [{ id, name, ... }]
+  const [zooList, setZooList] = useState([]);   // [{id, name}, ...]
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [loadingZoo, setLoadingZoo] = useState(true);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,17 +25,17 @@ export default function AddCamera() {
   function validateClient() {
     const errs = {};
     // IP
-    const ip = form.ip_address.trim();
+    const ip = (form.ip_address || "").trim();
     const ipRegex =
       /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
     if (!ip) errs.ip_address = "กรุณากรอก IP";
     else if (!ipRegex.test(ip)) errs.ip_address = "รูปแบบ IP ไม่ถูกต้อง (เช่น 192.168.1.10)";
 
     // ต้องเลือกสวนสัตว์
-    if (!String(form.zoo_id).trim()) errs.zoo_id = "กรุณาเลือกสวนสัตว์";
+    if (!String(form.zoo_id || "").trim()) errs.zoo_id = "กรุณาเลือกสวนสัตว์";
 
-    if (!form.camera_position.trim()) errs.camera_position = "กรุณากรอกตำแหน่งกล้อง";
-    if (!form.animal_name.trim()) errs.animal_name = "กรุณากรอกชื่อสัตว์";
+    if (!(form.camera_position || "").trim()) errs.camera_position = "กรุณากรอกตำแหน่งกล้อง";
+    if (!(form.animal_name || "").trim()) errs.animal_name = "กรุณากรอกชื่อสัตว์";
 
     // URL
     try {
@@ -48,11 +49,11 @@ export default function AddCamera() {
     return Object.keys(errs).length === 0;
   }
 
-  // โหลดรายการสวนสัตว์
+  // โหลดรายการสวนสัตว์จาก API2
   useEffect(() => {
     setLoadingZoo(true);
     setError(null);
-    fetch("http://localhost/lumen-api/public/api/v1/Getzoo", {
+    fetch("https://addpay.net/api/v1/zoo/e-member/all-zoo", {
       method: "GET",
       headers: { Accept: "application/json" },
     })
@@ -62,7 +63,10 @@ export default function AddCamera() {
       })
       .then((result) => {
         const payload = result?.data ?? result; // รองรับ {data:[...]} หรือ [...]
-        setZooList(Array.isArray(payload) ? payload : []);
+        // ✅ เก็บทั้งอ็อบเจ็กต์ไว้ใช้ label ทีหลัง
+        const arr = Array.isArray(payload) ? payload : [];
+        // ป้องกัน null/undefined
+        setZooList(arr.filter(z => z && z.id != null));
       })
       .catch((e) => setError(`โหลดรายชื่อสวนสัตว์ไม่สำเร็จ: ${e.message}`))
       .finally(() => setLoadingZoo(false));
@@ -79,20 +83,20 @@ export default function AddCamera() {
       return;
     }
 
-    // หา zoo_name จาก zoo_id (ถ้าต้องส่งไปด้วย)
-    const selected = zooList.find((z) => String(z.id) === String(form.zoo_id));
-    const zoo_name = selected?.name_zoo ?? "";
-
+    // ✅ ใช้ id จาก dropdown มาเป็น zoo_id เพื่อส่งให้ backend
     const payload = {
       ip_address: form.ip_address,
-      zoo_id: Number(form.zoo_id),     // สำคัญ: แปลงเป็นตัวเลข
-      zoo_name,                        // เผื่อ backend ต้องการชื่อด้วย
+      zoo_id: Number(form.zoo_id),  // ✅ DB เก็บ zoo_id เป็นเลข — แปลงเป็น number ชัวร์
       camera_position: form.camera_position,
       animal_name: form.animal_name,
       camera_url: form.camera_url,
     };
 
-    console.log("payload to /Addcamera:", payload);
+    // (optional) เผื่ออยาก preview ชื่อสวนสัตว์ฝั่ง client
+    const selected = zooList.find((z) => String(z.id) === String(form.zoo_id));
+    const zoo_name_preview = selected?.name ?? "";
+
+    console.log("payload to /Addcamera:", payload, "(preview:", zoo_name_preview, ")");
 
     fetch("http://localhost/lumen-api/public/api/v1/Addcamera", {
       method: "POST",
@@ -106,7 +110,7 @@ export default function AddCamera() {
           // ล้างฟอร์ม
           setForm({
             ip_address: "",
-            zoo_id: "",
+            zoo_id: "",               // ✅ รีเซ็ต
             camera_position: "",
             animal_name: "",
             camera_url: "",
@@ -162,8 +166,10 @@ export default function AddCamera() {
           >
             <option value="">{loadingZoo ? "กำลังโหลดรายชื่อ..." : "— เลือกสวนสัตว์ —"}</option>
             {zooList.map((z) => (
+              // ✅ ใช้ id เป็น value ที่จะส่งไปเก็บใน zoo_id ของ DB
+              // ✅ ใช้ name เป็นข้อความที่โชว์
               <option key={z.id} value={z.id}>
-                {z.name_zoo} {z.zooprovince ? `(${z.zooprovince})` : ""}
+                {z.name}
               </option>
             ))}
           </select>
