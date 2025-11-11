@@ -5,7 +5,7 @@ import Login from "./pages/login.jsx";
 import Register from "./pages/register.jsx";
 import Edit from "./pages/Edit.jsx";
 import Project from "./pages/Project.jsx";
-import Addzoo from "./pages/Addzoo.jsx";
+import CheckApi from "./pages/CheckApi.jsx";
 import ZooUbu from './pages/Zooubu.jsx'
 import AddCamera from "./pages/AddCamera.jsx";
 import ZooDetail from "./pages/ZooDetail.jsx";
@@ -23,7 +23,7 @@ function App() {
       <Route path="register" element={<Register />} />
       <Route path="edit" element={<Edit />} />
       <Route path="project" element={<Project />} />
-      <Route path="Addzoo" element={<Addzoo />} />
+      <Route path="CheckApi" element={<CheckApi />} />
       <Route path="zooubu" element={<ZooUbu />} />
       <Route path="AddCamera" element={<AddCamera />} />
       <Route path="zoo/:id" element={<ZooDetail />} />

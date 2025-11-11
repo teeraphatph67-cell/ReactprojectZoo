@@ -14,7 +14,7 @@ const navigation = [
   { name: 'Home', href: '/', current: true },
   { name: 'Edit', href: '/Edit', current: true },
   { name: 'AddCamera', href: '/AddCamera', current: false },
-  { name: 'Addzoo', href: '/Addzoo', current: false },
+  { name: 'CheckApi', href: '/CheckApi', current: false },
   { name: 'Ggview', href: '/Ggview', current: false },
   { name: 'zooview', href: '/zooview', current: false },
 ]
