@@ -16,11 +16,9 @@ function App() {
         {/* หน้า login / register */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/CameraDetail" element={<CameraDetail />} />
     
 
-    <Route path="/" element={<MainLayout />}>
-      <Route index element={<Hero />} />
-      <Route path="edit" element={<Edit />} />
      
       
 
