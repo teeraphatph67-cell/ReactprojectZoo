@@ -10,12 +10,13 @@ import {
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Link, useLocation } from "react-router-dom";
+
 
 const navigation = [
   { name: 'Edit', href: '/Edit', current: true },
   { name: 'AddCamera', href: '/AddCamera', current: false },
   { name: 'CheckApi', href: '/CheckApi', current: false },
+  { name: 'CameraDetail', href: '/CameraDetail', current: false },
 ]
 
 function classNames(...classes) {
@@ -39,6 +40,8 @@ export default function Navbar() {
   }, [user, apiKey, navigate]);
 
   const navigation = [
+      { name: 'CheckApi', href: '/CheckApi', show: isAdmin },
+  { name: 'CameraDetail', href: '/CameraDetail', show: isAdmin },
     { name: "Edit", href: "/Edit", show: isAdmin },
     { name: "Add Camera", href: "/AddCamera", show: isAdmin },
   ];

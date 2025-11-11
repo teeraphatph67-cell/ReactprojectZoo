@@ -1,93 +1,139 @@
-import React, { useEffect, useState } from "react"; // นำเข้า React และ hook useEffect, useState
-import { useParams, Link } from "react-router-dom"; // useParams ดึงค่าพารามิเตอร์จาก URL, Link สำหรับลิงก์ไปหน้าอื่น
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
+const API_CAMERAS = "http://localhost/lumen-api/public/api/v1/Getcamera"; // API_1
+const API_ZOOS    = "https://addpay.net/api/v1/zoo/e-member/all-zoo";     // API_2
 
 export default function CameraDetail() {
-  const { zooId, cameraId } = useParams(); // ดึง zooId และ cameraId จาก URL
-  const [camera, setCamera] = useState(null); // เก็บข้อมูลกล้องตัวเดียว
-  const [zoo, setZoo] = useState(null); // เก็บข้อมูลสวนสัตว์ที่กล้องอยู่
-  const [loading, setLoading] = useState(true); // ตัวบ่งชี้กำลังโหลด
-  const [error, setError] = useState(null); // เก็บข้อความ error
+  // ถ้ามี route param เช่น /camera/:id จะ auto เลือกอันนั้น
+  const params = useParams(); // ต้องประกาศ route ไว้ด้วย เช่น <Route path="/camera/:id" element={<CameraDetail />} />
+  const initialZooIdFromRoute = params?.id ?? "";
+
+  const [zoos, setZoos] = useState([]);          // [{id, name, ...}]
+  const [cameras, setCameras] = useState([]);    // [{..., zoo_id, ...}]
+  const [selectedZooId, setSelectedZooId] = useState(initialZooIdFromRoute);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    setLoading(true); // เริ่มโหลดข้อมูล
+    let canceled = false;
 
-    // ดึงข้อมูลกล้องทั้งหมดจาก API
-    fetch("http://localhost/lumen-api/public/api/v1/Getcamera")
-      .then((res) => res.json()) // แปลง response เป็น JSON
-      .then((result) => {
-        const allCams = result?.data ?? result; // ถ้ามี data ใช้ data ถ้าไม่ใช้ result ตรงๆ
-        // หาเฉพาะกล้องที่ตรงกับ cameraId และ zooId
-        const foundCam = allCams.find(
-          (c) =>
-            String(c.id) === String(cameraId) &&
-            String(c.zoo_id) === String(zooId)
-        );
+    async function load() {
+      setLoading(true);
+      setErr("");
+      try {
+        // ดึงพร้อมกันทั้งสอง API
+        const [resCam, resZoo] = await Promise.all([fetch(API_CAMERAS), fetch(API_ZOOS)]);
+        if (!resCam.ok) throw new Error(`Cameras HTTP ${resCam.status}`);
+        if (!resZoo.ok) throw new Error(`Zoos HTTP ${resZoo.status}`);
 
-        if (!foundCam) throw new Error("ไม่พบกล้องนี้"); // ถ้าไม่เจอกล้องให้โยน error
+        const camJson = await resCam.json();
+        const zooJson = await resZoo.json();
 
-        setCamera(foundCam); // เก็บข้อมูลกล้อง
-        // สร้าง object ของสวนสัตว์จากกล้อง
-        setZoo({
-          id: foundCam.zoo_id,
-          name_zoo: foundCam.zoo_name,
-          zooprovince: foundCam.zooprovince,
-        });
-      })
-      .catch((err) => setError(err.message)) // ถ้า fetch หรือ find ผิดพลาด ให้เซ็ต error
-      .finally(() => setLoading(false)); // ไม่ว่า error หรือสำเร็จ ให้ปิด loading
-  }, [zooId, cameraId]); // useEffect จะรันใหม่ทุกครั้งที่ zooId หรือ cameraId เปลี่ยน
+        // รองรับโครง {data:[...]} หรือ [...] ตรงๆ
+        const cams = Array.isArray(camJson?.data) ? camJson.data : (Array.isArray(camJson) ? camJson : []);
+        const zlist = Array.isArray(zooJson?.data) ? zooJson.data : (Array.isArray(zooJson) ? zooJson : []);
 
-  if (loading) return <p>กำลังโหลดข้อมูลกล้อง...</p>; // ขณะรอข้อมูล
-  if (error) return <p className="text-red-500">❌ {error}</p>; // แสดงข้อความ error
+        if (!canceled) {
+          setCameras(cams.filter(x => x && x.zoo_id != null));
+          setZoos(zlist.filter(z => z && z.id != null));
+          // ถ้ามี id จาก route แต่ยังไม่ตั้งค่า ให้ตั้งเลย
+          if (initialZooIdFromRoute && !selectedZooId) {
+            setSelectedZooId(String(initialZooIdFromRoute));
+          }
+        }
+      } catch (e) {
+        if (!canceled) setErr(e.message || String(e));
+      } finally {
+        if (!canceled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { canceled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // zoo ที่ถูกเลือก (จาก API_2)
+  const selectedZoo = useMemo(
+    () => zoos.find(z => String(z.id) === String(selectedZooId)),
+    [zoos, selectedZooId]
+  );
+
+  // กล้องที่ zoo_id ตรงกับ id ที่เลือก (join แบบง่าย)
+  const filteredCameras = useMemo(
+    () => cameras.filter(cam => String(cam.zoo_id) === String(selectedZooId)),
+    [cameras, selectedZooId]
+  );
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      {/* ลิงก์กลับไปยังหน้า zoo */}
-      <Link
-        to={`/zoo/${zoo.id}`}
-        className="text-blue-400 hover:underline mb-6 inline-block"
-      >
-        ← กลับไปที่ {zoo.name_zoo}
-      </Link>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="mx-auto max-w-4xl bg-white rounded-2xl shadow p-6">
+        <h1 className="text-2xl font-bold mb-4">Camera Detail</h1>
 
-      {/* กล่องข้อมูลกล้อง */}
-      <div className="p-6 rounded-2xl shadow-2xl bg-white">
-        {/* ชื่อสัตว์ + ตำแหน่งกล้อง */}
-        <h1 className="text-2xl font-bold mb-4">
-          {camera.animal_name} (ตำแหน่งกล้อง: {camera.camera_position})
-        </h1>
-        <iframe
-          width="100%"
-          height="300"
-          src={camera.camera_url.replace("watch?v=", "embed/")} // เปลี่ยนเป็น embed
-          title={camera.animal_name}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
-
-        {/* รายละเอียดต่างๆ */}
-        <p>
-          <span className="font-semibold">📡 IP:</span> {camera.ip_address}
-        </p>
-        <p>
-          <span className="font-semibold">🎥 URL:</span>{" "}
-          <a
-            href={camera.camera_url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-blue-500 underline"
+        {/* เลือกสวนสัตว์ (ถ้าใช้ route param ก็ยังเปลี่ยนได้จาก dropdown) */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">เลือกสวนสัตว์</label>
+          <select
+            className="w-full border rounded-lg px-3 py-2"
+            value={selectedZooId}
+            onChange={(e) => setSelectedZooId(e.target.value)}
           >
-            เปิดสตรีม
-          </a>
-        </p>
-        <p>
-          <span className="font-semibold">🌍 จังหวัด:</span>{" "}
-          {camera.zooprovince}
-        </p>
-        <p>
-          <span className="font-semibold">🕓 ล่าสุด:</span> {camera.updated_at}
-        </p>
+            <option value="">{loading ? "กำลังโหลด..." : "— เลือกสวนสัตว์ —"}</option>
+            {zoos.map(z => (
+              <option key={z.id} value={z.id}>
+                {z.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {err && (
+          <div className="mb-4 rounded-lg bg-red-50 text-red-700 p-3 text-sm">
+            เกิดข้อผิดพลาด: {err}
+          </div>
+        )}
+
+        {selectedZoo && (
+          <div className="mb-4 text-sm text-gray-700">
+            <div>🆔 <span className="font-mono">{selectedZoo.id}</span></div>
+            <div>🏷️ {selectedZoo.name}</div>
+          </div>
+        )}
+
+        {/* รายการกล้องที่ match zoo_id === id */}
+        <h2 className="text-lg font-semibold mb-2">
+          กล้องที่อยู่ในสวนสัตว์นี้ {selectedZoo ? `(${selectedZoo.name})` : ""}
+        </h2>
+
+        {loading ? (
+          <div className="text-gray-500">กำลังโหลดข้อมูล...</div>
+        ) : !selectedZooId ? (
+          <div className="text-gray-500">โปรดเลือกสวนสัตว์ก่อน</div>
+        ) : filteredCameras.length === 0 ? (
+          <div className="text-gray-500">ไม่พบกล้องที่ตรงกับสวนสัตว์นี้</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredCameras.map((cam) => (
+              <div key={cam.id ?? `${cam.ip_address}-${cam.camera_url}`} className="border rounded-xl p-4">
+                <div className="text-sm text-gray-500">zoo_id: <span className="font-mono">{cam.zoo_id}</span></div>
+                <div className="font-medium mt-1">{cam.camera_position || "ตำแหน่งไม่ระบุ"}</div>
+                <div className="text-sm text-gray-700">{cam.animal_name || "สัตว์ไม่ระบุ"}</div>
+                {cam.camera_url && (
+                  <a
+                    href={cam.camera_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block mt-2 text-indigo-600 underline"
+                  >
+                    เปิดสตรีม
+                  </a>
+                )}
+                <div className="text-xs text-gray-500 mt-2">IP: {cam.ip_address || "-"}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ export default function Login() {
       localStorage.setItem("api_key", data.api_key);
       localStorage.setItem("user", JSON.stringify(data.user));
       setMessage("Login สำเร็จ!");
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setMessage("เกิดข้อผิดพลาด: " + err.message);
     }
