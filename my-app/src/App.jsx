@@ -13,11 +13,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         {/* หน้า login / register */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Layout หลัก */}
+        <Route path="/CameraDetail" element={<CameraDetail />} />
+        {/* หน้า dashboard / admin ใช้ layout */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Hero />} /> {/* ใช้ index แทน path="/" */}
           <Route path="edit" element={<Edit />} />
