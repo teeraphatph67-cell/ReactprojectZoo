@@ -1,138 +1,110 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-const API_CAMERAS = "http://localhost/lumen-api/public/api/v1/Getcamera"; // API_1
-const API_ZOOS    = "https://addpay.net/api/v1/zoo/e-member/all-zoo";     // API_2
+const API_CAMERAS = "http://localhost/lumen-api/public/api/v1/Getcamera";
+const API_ZOOS = "https://addpay.net/api/v1/zoo/e-member/all-zoo";
 
 export default function CameraDetail() {
-  // ถ้ามี route param เช่น /camera/:id จะ auto เลือกอันนั้น
-  const params = useParams(); // ต้องประกาศ route ไว้ด้วย เช่น <Route path="/camera/:id" element={<CameraDetail />} />
-  const initialZooIdFromRoute = params?.id ?? "";
-
-  const [zoos, setZoos] = useState([]);          // [{id, name, ...}]
-  const [cameras, setCameras] = useState([]);    // [{..., zoo_id, ...}]
-  const [selectedZooId, setSelectedZooId] = useState(initialZooIdFromRoute);
+  const { zooId } = useParams(); // ดึง zooId จาก URL เช่น /zoo/2
+  const [zoo, setZoo] = useState(null);
+  const [cameras, setCameras] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    let canceled = false;
-
     async function load() {
-      setLoading(true);
-      setErr("");
       try {
-        // ดึงพร้อมกันทั้งสอง API
-        const [resCam, resZoo] = await Promise.all([fetch(API_CAMERAS), fetch(API_ZOOS)]);
-        if (!resCam.ok) throw new Error(`Cameras HTTP ${resCam.status}`);
-        if (!resZoo.ok) throw new Error(`Zoos HTTP ${resZoo.status}`);
+        setLoading(true);
+        setErr("");
+
+        // ดึงข้อมูลกล้องทั้งหมด และสวนสัตว์ทั้งหมด
+        const [resCam, resZoo] = await Promise.all([
+          fetch(API_CAMERAS),
+          fetch(API_ZOOS),
+        ]);
+
+        if (!resCam.ok || !resZoo.ok)
+          throw new Error("ไม่สามารถดึงข้อมูลจาก API ได้");
 
         const camJson = await resCam.json();
         const zooJson = await resZoo.json();
 
-        // รองรับโครง {data:[...]} หรือ [...] ตรงๆ
-        const cams = Array.isArray(camJson?.data) ? camJson.data : (Array.isArray(camJson) ? camJson : []);
-        const zlist = Array.isArray(zooJson?.data) ? zooJson.data : (Array.isArray(zooJson) ? zooJson : []);
+        // ดึงเฉพาะข้อมูลที่ตรงกับ zooId ที่มากับ route
+        const cams =
+          Array.isArray(camJson?.data) || Array.isArray(camJson)
+            ? (camJson.data ?? camJson).filter(
+                (c) => String(c.zoo_id) === String(zooId)
+              )
+            : [];
 
-        if (!canceled) {
-          setCameras(cams.filter(x => x && x.zoo_id != null));
-          setZoos(zlist.filter(z => z && z.id != null));
-          // ถ้ามี id จาก route แต่ยังไม่ตั้งค่า ให้ตั้งเลย
-          if (initialZooIdFromRoute && !selectedZooId) {
-            setSelectedZooId(String(initialZooIdFromRoute));
-          }
-        }
+        const zoos =
+          Array.isArray(zooJson?.data) || Array.isArray(zooJson)
+            ? zooJson.data ?? zooJson
+            : [];
+
+        const zooFound = zoos.find((z) => String(z.id) === String(zooId));
+
+        setCameras(cams);
+        setZoo(zooFound ?? null);
       } catch (e) {
-        if (!canceled) setErr(e.message || String(e));
+        setErr(e.message || "เกิดข้อผิดพลาดไม่ทราบสาเหตุ");
       } finally {
-        if (!canceled) setLoading(false);
+        setLoading(false);
       }
     }
 
     load();
-    return () => { canceled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // zoo ที่ถูกเลือก (จาก API_2)
-  const selectedZoo = useMemo(
-    () => zoos.find(z => String(z.id) === String(selectedZooId)),
-    [zoos, selectedZooId]
-  );
-
-  // กล้องที่ zoo_id ตรงกับ id ที่เลือก (join แบบง่าย)
-  const filteredCameras = useMemo(
-    () => cameras.filter(cam => String(cam.zoo_id) === String(selectedZooId)),
-    [cameras, selectedZooId]
-  );
+  }, [zooId]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="mx-auto max-w-4xl bg-white rounded-2xl shadow p-6">
-        <h1 className="text-2xl font-bold mb-4">Camera Detail</h1>
-
-        {/* เลือกสวนสัตว์ (ถ้าใช้ route param ก็ยังเปลี่ยนได้จาก dropdown) */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">เลือกสวนสัตว์</label>
-          <select
-            className="w-full border rounded-lg px-3 py-2"
-            value={selectedZooId}
-            onChange={(e) => setSelectedZooId(e.target.value)}
-          >
-            <option value="">{loading ? "กำลังโหลด..." : "— เลือกสวนสัตว์ —"}</option>
-            {zoos.map(z => (
-              <option key={z.id} value={z.id}>
-                {z.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {err && (
-          <div className="mb-4 rounded-lg bg-red-50 text-red-700 p-3 text-sm">
-            เกิดข้อผิดพลาด: {err}
-          </div>
-        )}
-
-        {selectedZoo && (
-          <div className="mb-4 text-sm text-gray-700">
-            <div>🆔 <span className="font-mono">{selectedZoo.id}</span></div>
-            <div>🏷️ {selectedZoo.name}</div>
-          </div>
-        )}
-
-        {/* รายการกล้องที่ match zoo_id === id */}
-        <h2 className="text-lg font-semibold mb-2">
-          กล้องที่อยู่ในสวนสัตว์นี้ {selectedZoo ? `(${selectedZoo.name})` : ""}
-        </h2>
-
         {loading ? (
           <div className="text-gray-500">กำลังโหลดข้อมูล...</div>
-        ) : !selectedZooId ? (
-          <div className="text-gray-500">โปรดเลือกสวนสัตว์ก่อน</div>
-        ) : filteredCameras.length === 0 ? (
-          <div className="text-gray-500">ไม่พบกล้องที่ตรงกับสวนสัตว์นี้</div>
+        ) : err ? (
+          <div className="text-red-500">เกิดข้อผิดพลาด: {err}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredCameras.map((cam) => (
-              <div key={cam.id ?? `${cam.ip_address}-${cam.camera_url}`} className="border rounded-xl p-4">
-                <div className="text-sm text-gray-500">zoo_id: <span className="font-mono">{cam.zoo_id}</span></div>
-                <div className="font-medium mt-1">{cam.camera_position || "ตำแหน่งไม่ระบุ"}</div>
-                <div className="text-sm text-gray-700">{cam.animal_name || "สัตว์ไม่ระบุ"}</div>
-                {cam.camera_url && (
-                  <a
-                    href={cam.camera_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-block mt-2 text-indigo-600 underline"
+          <>
+            <h1 className="text-2xl font-bold mb-4">
+              กล้องในสวนสัตว์ {zoo ? zoo.name : `ID ${zooId}`}
+            </h1>
+
+            {cameras.length === 0 ? (
+              <p className="text-gray-500">ไม่มีกล้องในสวนสัตว์นี้</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {cameras.map((cam) => (
+                  <div
+                    key={cam.id ?? cam.ip_address}
+                    className="border rounded-xl p-4 shadow-sm"
                   >
-                    เปิดสตรีม
-                  </a>
-                )}
-                <div className="text-xs text-gray-500 mt-2">IP: {cam.ip_address || "-"}</div>
+                    <div className="text-sm text-gray-500">
+                      zoo_id: {cam.zoo_id}
+                    </div>
+                    <div className="font-medium mt-1">
+                      {cam.camera_position || "ตำแหน่งไม่ระบุ"}
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      {cam.animal_name || "สัตว์ไม่ระบุ"}
+                    </div>
+                    {cam.camera_url && (
+                      <a
+                        href={cam.camera_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-indigo-600 underline mt-2 inline-block"
+                      >
+                        เปิดสตรีม
+                      </a>
+                    )}
+                    <div className="text-xs text-gray-500 mt-2">
+                      IP: {cam.ip_address || "-"}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
