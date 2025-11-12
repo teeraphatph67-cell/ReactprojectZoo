@@ -20,12 +20,14 @@ function App() {
         <Route path="/CameraDetail" element={<CameraDetail />} />
         {/* หน้า dashboard / admin ใช้ layout */}
         <Route path="/" element={<MainLayout />}>
-          <Route path="/"element={<Hero />} />
+          <Route index element={<Hero />} /> {/* ใช้ index แทน path="/" */}
           <Route path="edit" element={<Edit />} />
-           <Route path="CheckApi" element={<CheckApi />} />
+          <Route path="CheckApi" element={<CheckApi />} />
           <Route path="AddCamera" element={<AddCamera />} />
           <Route path="zoo/:id" element={<ZooDetail />} />
-          <Route path="zoo/:zooId/camera/:cameraId" element={<CameraDetail />} />
+          <Route path="zoo/:zooId/camera" element={<CameraDetail />} />
+
+
         </Route>
       </Routes>
     </BrowserRouter>

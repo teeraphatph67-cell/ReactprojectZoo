@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams,Link } from "react-router-dom";
 
-const API_CAMERAS = "http://localhost/lumen-api/public/api/v1/Getcamera"; // API_1
-const API_ZOOS    = "https://addpay.net/api/v1/zoo/e-member/all-zoo";     // API_2
+const API_CAMERAS = "http://localhost/lumen-api/public/api/v1/Getcamera";
+const API_ZOOS = "https://addpay.net/api/v1/zoo/e-member/all-zoo";
 
 const API_DELETE_ONE = "http://localhost/lumen-api/public/api/v1/cameras"; // DELETE /cameras/:id
 
@@ -131,45 +131,50 @@ export default function CameraDetail() {
 
         {loading ? (
           <div className="text-gray-500">กำลังโหลดข้อมูล...</div>
-        ) : !selectedZooId ? (
-          <div className="text-gray-500">โปรดเลือกสวนสัตว์ก่อน</div>
-        ) : filteredCameras.length === 0 ? (
-          <div className="text-gray-500">ไม่พบกล้องที่ตรงกับสวนสัตว์นี้</div>
+        ) : err ? (
+          <div className="text-red-500">เกิดข้อผิดพลาด: {err}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredCameras.map((cam) => (
-              <div key={cam.id ?? `${cam.ip_address}-${cam.camera_url}`} className="border rounded-xl p-4">
-                <div className="text-sm text-gray-500">
-                  zoo_id: <span className="font-mono">{cam.zoo_id}</span>
-                </div>
-                <div className="font-medium mt-1">{cam.camera_position || "ตำแหน่งไม่ระบุ"}</div>
-                <div className="text-sm text-gray-700">{cam.animal_name || "สัตว์ไม่ระบุ"}</div>
-                {cam.camera_url && (
-                  <a
-                    href={cam.camera_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-block mt-2 text-indigo-600 underline"
-                  >
-                    เปิดสตรีม
-                  </a>
-                )}
-                <div className="text-xs text-gray-500 mt-2">IP: {cam.ip_address || "-"}</div>
+          <>
+            <h1 className="text-2xl font-bold mb-4">
+              กล้องในสวนสัตว์ {zoo ? zoo.name : `ID ${zooId}`}
+            </h1>
 
-                {/* ★ KEEP: ปุ่มลบเฉพาะกล้องตัวนี้ */}
-                {cam.id && (
-                  <button
-                    type="button"
-                    onClick={() => deleteCameraById(cam.id)}
-                    disabled={deletingId === cam.id}
-                    className="mt-3 inline-flex items-center rounded-lg bg-red-600 text-white px-3 py-1 text-sm hover:bg-red-700 disabled:opacity-50"
+            {cameras.length === 0 ? (
+              <p className="text-gray-500">ไม่มีกล้องในสวนสัตว์นี้</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {cameras.map((cam) => (
+                  <div
+                    key={cam.id ?? cam.ip_address}
+                    className="border rounded-xl p-4 shadow-sm"
                   >
-                    {deletingId === cam.id ? "กำลังลบ..." : "ลบกล้องนี้"}
-                  </button>
-                )}
+                    <div className="text-sm text-gray-500">
+                      zoo_id: {cam.zoo_id}
+                    </div>
+                    <div className="font-medium mt-1">
+                      {cam.camera_position || "ตำแหน่งไม่ระบุ"}
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      {cam.animal_name || "สัตว์ไม่ระบุ"}
+                    </div>
+                    {cam.camera_url && (
+                      <a
+                        href={cam.camera_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-indigo-600 underline mt-2 inline-block"
+                      >
+                        เปิดสตรีม
+                      </a>
+                    )}
+                    <div className="text-xs text-gray-500 mt-2">
+                      IP: {cam.ip_address || "-"}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
