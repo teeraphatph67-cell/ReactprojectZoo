@@ -7,14 +7,18 @@ const API_ZOOS = "https://addpay.net/api/v1/zoo/e-member/all-zoo";
 const API_DELETE_ONE = "http://localhost/lumen-api/public/api/v1/cameras"; // DELETE /cameras/:id
 
 export default function CameraDetail() {
-  const { zooId } = useParams(); // /zoo/:zooId
+  const { zooId } = useParams();
   const navigate = useNavigate();
 
-  const [zoos, setZoos] = useState([]); // [{id, name, ...}]
-  const [cameras, setCameras] = useState([]); // ทั้งหมด
+  const [zoos, setZoos] = useState([]);
+  const [cameras, setCameras] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+
+  // ✅ อ่าน user role จาก localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = user?.roles?.some((r) => r.name === "admin");
 
   const toArray = (json) =>
     Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : [];
@@ -33,12 +37,8 @@ export default function CameraDetail() {
       const camJson = await resCam.json();
       const zooJson = await resZoo.json();
 
-      const camsAll = toArray(camJson).filter(
-        (x) => x && x.zoo_id != null
-      );
-      const zoosAll = toArray(zooJson).filter(
-        (z) => z && z.id != null
-      );
+      const camsAll = toArray(camJson).filter((x) => x && x.zoo_id != null);
+      const zoosAll = toArray(zooJson).filter((z) => z && z.id != null);
 
       setCameras(camsAll);
       setZoos(zoosAll);
@@ -59,19 +59,16 @@ export default function CameraDetail() {
     };
   }, [zooId]);
 
-  // zoo ที่เลือก
   const selectedZoo = useMemo(
     () => zoos.find((z) => String(z.id) === String(zooId)),
     [zoos, zooId]
   );
 
-  // กล้องของสวนนี้เท่านั้น
   const filteredCameras = useMemo(
     () => cameras.filter((cam) => String(cam.zoo_id) === String(zooId)),
     [cameras, zooId]
   );
 
-  // ลบกล้อง
   async function deleteCameraById(id) {
     if (!id) return;
     if (!window.confirm("ยืนยันลบกล้องนี้หรือไม่?")) return;
@@ -87,7 +84,7 @@ export default function CameraDetail() {
         const t = await res.text().catch(() => "");
         throw new Error(t || `DELETE /cameras/${id} HTTP ${res.status}`);
       }
-      await load(); // โหลดใหม่ หลังลบ
+      await load();
     } catch (e) {
       setErr(e.message || String(e));
     } finally {
@@ -102,21 +99,15 @@ export default function CameraDetail() {
           🦓 กำลังโหลดข้อมูลกล้อง...
         </div>
       ) : err ? (
-        <div className="text-red-600 text-center mt-20 font-semibold">
-          {err}
-        </div>
+        <div className="text-red-600 text-center mt-20 font-semibold">{err}</div>
       ) : (
         <>
           <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            {selectedZoo
-              ? `กล้องในสวนสัตว์ ${selectedZoo.name}`
-              : `ID สวนสัตว์ ${zooId}`}
+            {selectedZoo ? `กล้องในสวนสัตว์ ${selectedZoo.name}` : `ID สวนสัตว์ ${zooId}`}
           </h1>
 
           {filteredCameras.length === 0 ? (
-            <p className="text-gray-500 text-center text-lg">
-              ไม่มีกล้องในสวนสัตว์นี้
-            </p>
+            <p className="text-gray-500 text-center text-lg">ไม่มีกล้องในสวนสัตว์นี้</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCameras.map((cam) => (
@@ -129,8 +120,7 @@ export default function CameraDetail() {
                       <div className="text-gray-600 text-lg">
                         ชื่อสวนสัตว์: {selectedZoo?.name ?? "-"}
                       </div>
-                      ตำแหน่งกล้องตัวที่:{" "}
-                      {cam.camera_position || "ตำแหน่งไม่ระบุ"}
+                      ตำแหน่งกล้องตัวที่: {cam.camera_position || "ตำแหน่งไม่ระบุ"}
                       <div className="text-gray-400 text-xs mt-2">
                         IP: {cam.ip_address || "-"}
                       </div>
@@ -140,25 +130,17 @@ export default function CameraDetail() {
                     </div>
                     {cam.created_at && (
                       <div className="text-gray-400 text-xs">
-                        สร้าง:{" "}
-                        {new Date(
-                          cam.created_at
-                        ).toLocaleDateString()}
+                        สร้าง: {new Date(cam.created_at).toLocaleDateString()}
                       </div>
                     )}
                     {cam.updated_at && (
                       <div className="text-gray-400 text-xs">
-                        อัปเดตล่าสุด:{" "}
-                        {new Date(
-                          cam.updated_at
-                        ).toLocaleDateString()}
+                        อัปเดตล่าสุด: {new Date(cam.updated_at).toLocaleDateString()}
                       </div>
                     )}
                   </div>
 
-                  {/* ส่วนปุ่มด้านล่าง */}
                   <div className="mt-4 space-y-3">
-                    {/* ปุ่มเปิดสตรีม */}
                     {cam.camera_url && (
                       <a
                         href={cam.camera_url}
@@ -170,27 +152,25 @@ export default function CameraDetail() {
                       </a>
                     )}
 
-                    {/* ปุ่มแก้ไข + ลบ */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() =>
-                          navigate(`/edit-camera/${cam.id}`)
-                        }
-                        className="flex-1 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
-                      >
-                        แก้ไข
-                      </button>
+                    {/* ✅ เฉพาะ admin เท่านั้นที่เห็นปุ่มนี้ */}
+                    {isAdmin && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/edit-camera/${cam.id}`)}
+                          className="flex-1 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
+                        >
+                          แก้ไข
+                        </button>
 
-                      <button
-                        onClick={() => deleteCameraById(cam.id)}
-                        disabled={deletingId === cam.id}
-                        className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition disabled:opacity-50"
-                      >
-                        {deletingId === cam.id
-                          ? "กำลังลบ..."
-                          : "ลบ"}
-                      </button>
-                    </div>
+                        <button
+                          onClick={() => deleteCameraById(cam.id)}
+                          disabled={deletingId === cam.id}
+                          className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition disabled:opacity-50"
+                        >
+                          {deletingId === cam.id ? "กำลังลบ..." : "ลบ"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
