@@ -1,54 +1,96 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+// CameraDetail.jsx
+import { useEffect, useMemo, useState } from "react";
+import { useParams,useNavigate  } from "react-router-dom";
 
 const API_CAMERAS = "http://localhost/lumen-api/public/api/v1/Getcamera";
 const API_ZOOS = "https://addpay.net/api/v1/zoo/e-member/all-zoo";
+const API_DELETE_ONE = "http://localhost/lumen-api/public/api/v1/cameras"; // DELETE /cameras/:id
 
 export default function CameraDetail() {
+  // ใช้ zooId จาก URL เช่น /zoo/2
   const { zooId } = useParams();
-  const [zoo, setZoo] = useState(null);
-  const [cameras, setCameras] = useState([]);
+
+  const navigate = useNavigate();
+  const [zoos, setZoos] = useState([]);          // [{id, name, ...}]
+  const [cameras, setCameras] = useState([]);    // ทั้งหมด (เดี๋ยวกรองด้วย zooId)
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+
+
+  // helper: แปลง response ที่อาจอยู่ใน data หรือเป็น array ตรง ๆ
+  const toArray = (json) => {
+    if (Array.isArray(json?.data)) return json.data;
+    if (Array.isArray(json)) return json;
+    return [];
+  };
+
+  async function load() {
+    setLoading(true);
+    setErr("");
+    try {
+      const [resCam, resZoo] = await Promise.all([fetch(API_CAMERAS), fetch(API_ZOOS)]);
+      if (!resCam.ok) throw new Error(`Cameras HTTP ${resCam.status}`);
+      if (!resZoo.ok) throw new Error(`Zoos HTTP ${resZoo.status}`);
+
+      const camJson = await resCam.json();
+      const zooJson = await resZoo.json();
+
+      const camsAll = toArray(camJson).filter(x => x && x.zoo_id != null);
+      const zoosAll = toArray(zooJson).filter(z => z && z.id != null);
+
+      setCameras(camsAll);
+      setZoos(zoosAll);
+    } catch (e) {
+      setErr(e.message || String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        setErr("");
+    let canceled = false;
+    (async () => {
+      if (!canceled) await load();
+    })();
+    return () => { canceled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zooId]); // เปลี่ยน zooId แล้วโหลดใหม่
 
-        const [resCam, resZoo] = await Promise.all([
-          fetch(API_CAMERAS),
-          fetch(API_ZOOS),
-        ]);
+  // zoo ที่เลือก (จากพารามิเตอร์ ไม่ได้มี dropdown แล้ว)
+  const selectedZoo = useMemo(
+    () => zoos.find(z => String(z.id) === String(zooId)),
+    [zoos, zooId]
+  );
 
-        if (!resCam.ok || !resZoo.ok)
-          throw new Error("ไม่สามารถดึงข้อมูลจาก API ได้");
+  // กรองกล้องเฉพาะของสวนสัตว์นั้น
+  const filteredCameras = useMemo(
+    () => cameras.filter(cam => String(cam.zoo_id) === String(zooId)),
+    [cameras, zooId]
+  );
 
-        const camJson = await resCam.json();
-        const zooJson = await resZoo.json();
+  // ลบกล้องรายตัว
+  async function deleteCameraById(id) {
+    if (!id) return;
+    const ok = window.confirm("ยืนยันลบกล้องนี้หรือไม่?");
+    if (!ok) return;
 
-        const cams =
-          Array.isArray(camJson?.data) || Array.isArray(camJson)
-            ? (camJson.data ?? camJson).filter(
-                (c) => String(c.zoo_id) === String(zooId)
-              )
-            : [];
-
-        const zoos =
-          Array.isArray(zooJson?.data) || Array.isArray(zooJson)
-            ? zooJson.data ?? zooJson
-            : [];
-
-        const zooFound = zoos.find((z) => String(z.id) === String(zooId));
-
-        setCameras(cams);
-        setZoo(zooFound ?? null);
-      } catch (e) {
-        setErr(e.message || "เกิดข้อผิดพลาดไม่ทราบสาเหตุ");
-      } finally {
-        setLoading(false);
+    setDeletingId(id);
+    setErr("");
+    try {
+      const res = await fetch(`${API_DELETE_ONE}/${id}`, {
+        method: "DELETE",
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok && res.status !== 204) {
+        const t = await res.text().catch(() => "");
+        throw new Error(t || `DELETE /cameras/${id} HTTP ${res.status}`);
       }
+      await load(); // รีเฟรชหลังลบ
+    } catch (e) {
+      setErr(e.message || String(e));
+    } finally {
+      setDeletingId(null);
     }
 
     load();
