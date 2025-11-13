@@ -8,6 +8,7 @@ import CheckApi from "./pages/CheckApi.jsx";
 import AddCamera from "./pages/AddCamera.jsx";
 import ZooDetail from "./pages/ZooDetail.jsx";
 import CameraDetail from "./pages/CameraDetail.jsx";
+import EditCamera from "./pages/EditCamera.jsx";
 
 function App() {
   return (
@@ -17,7 +18,8 @@ function App() {
         {/* หน้า login / register */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/CameraDetail" element={<CameraDetail />} />
+        
+        
         {/* หน้า dashboard / admin ใช้ layout */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Hero />} /> {/* ใช้ index แทน path="/" */}
@@ -26,8 +28,8 @@ function App() {
           <Route path="AddCamera" element={<AddCamera />} />
           <Route path="zoo/:id" element={<ZooDetail />} />
           <Route path="zoo/:zooId/camera" element={<CameraDetail />} />
-
-
+          <Route path="/edit-camera/:id" element={<EditCamera />} />
+          <Route path="/CameraDetail" element={<CameraDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>
