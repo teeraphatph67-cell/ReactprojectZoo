@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Disclosure, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 function classNames(...classes) {
