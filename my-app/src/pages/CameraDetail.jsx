@@ -92,87 +92,80 @@ export default function CameraDetail() {
     } finally {
       setDeletingId(null);
     }
-  }
+
+    load();
+  }, [zooId]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="mx-auto max-w-4xl bg-white rounded-2xl shadow p-6">
-        <h1 className="text-2xl font-bold mb-4">
-          กล้องในสวนสัตว์ {selectedZoo ? selectedZoo.name : `ID ${zooId || "-"}`}
-        </h1>
+    <div className="min-h-screen bg-gray-50 p-6">
+      {loading ? (
+        <div className="text-gray-500 text-center text-lg mt-20">
+          🦓 กำลังโหลดข้อมูลกล้อง...
+        </div>
+      ) : err ? (
+        <div className="text-red-600 text-center mt-20 font-semibold">
+          {err}
+        </div>
+      ) : (
+        <>
+          <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+            {zoo ? `กล้องในสวนสัตว์ ${zoo.name}` : `ID สวนสัตว์ ${zooId}`}
+          </h1>
 
-        {err && (
-          <div className="mb-4 rounded-lg bg-red-50 text-red-700 p-3 text-sm">
-            เกิดข้อผิดพลาด: {err}
-          </div>
-        )}
-
-        {selectedZoo && (
-          <div className="mb-4 text-sm text-gray-700">
-            <div>🆔 <span className="font-mono">{selectedZoo.id}</span></div>
-            <div>🏷️ {selectedZoo.name}</div>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="text-gray-500">กำลังโหลดข้อมูล...</div>
-        ) : filteredCameras.length === 0 ? (
-          <p className="text-gray-500">ไม่มีกล้องในสวนสัตว์นี้</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredCameras.map((cam) => (
-              <div
-                key={cam.id ?? `${cam.zoo_id}-${cam.ip_address ?? Math.random()}`}
-                className="border rounded-xl p-4 shadow-sm"
-              >
-                <div className="text-sm text-gray-500">zoo_id: {cam.zoo_id}</div>
-                <div className="font-medium mt-1">กล้อง
-                  {cam.camera_position || "ตำแหน่งไม่ระบุ"}
-                </div>
-                <div className="text-sm text-gray-700">
-                  {cam.animal_name || "สัตว์ไม่ระบุ"}
-                </div>
-
-                {cam.camera_url && (
-                  <a
-                    href={cam.camera_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-indigo-600 underline mt-2 inline-block"
-                  >
-                    เปิดสตรีม
-                  </a>
-                )}
-
-                <div className="text-xs text-gray-500 mt-2">
-                  IP: {cam.ip_address || "-"}
-                </div>
-
-                {/* ปุ่มลบ (รายตัว) */}
-                <button
-                  onClick={() => deleteCameraById(cam.id)}
-                  disabled={!cam.id || deletingId === cam.id}
-                  className={`mt-3 px-3 py-1 rounded-lg text-sm ${deletingId === cam.id
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-red-600 text-white hover:bg-red-700"
-                    }`}
+          {cameras.length === 0 ? (
+            <p className="text-gray-500 text-center text-lg">
+              ไม่มีกล้องในสวนสัตว์นี้
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cameras.map((cam) => (
+                <div
+                  key={cam.id ?? cam.ip_address}
+                  className="bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition-shadow p-5 flex flex-col justify-between"
                 >
-                  {deletingId === cam.id ? "กำลังลบ..." : "ลบกล้อง"}
-                </button>
+                  <div className="space-y-2">
+                    <div className="font-semibold text-gray-800 text-lg">
+                      <div className="text-black-400 text-lg">
+                        ชื่อสวนสัตว์: {zoo.name}
+                      </div>
+                      ตำแหน่งกล้องตัวที่:{" "}
+                      {cam.camera_position || "ตำแหน่งไม่ระบุ"}
+                      <div className="text-black-400 text-xs mt-2">
+                        IP: {cam.ip_address || "-"}
+                      </div>
+                    </div>
+                    <div className="text-black-600">
+                      สัตว์: {cam.animal_name || "ไม่ระบุ"}
+                    </div>
+                    {cam.created_at && (
+                      <div className="text-black-400 text-xs">
+                        สร้าง: {new Date(cam.created_at).toLocaleDateString()}
+                      </div>
+                    )}
+                    {cam.updated_at && (
+                      <div className="text-black-400 text-xs">
+                        อัปเดตล่าสุด:{" "}
+                        {new Date(cam.updated_at).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
 
-                <button
-                  onClick={() => navigate(`/edit-camera/${cam.id}`)}
-                  className="mt-3 px-3 py-1 rounded-lg text-sm bg-indigo-600 text-white hover:bg-indigo-700"
-                >
-                  แก้ไข
-                </button>
-
-
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                  {cam.camera_url && (
+                    <a
+                      href={cam.camera_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-4 inline-block text-center bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                    >
+                      เปิดสตรีม
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

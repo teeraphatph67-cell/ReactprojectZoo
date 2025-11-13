@@ -30,6 +30,7 @@ function App() {
           <Route path="zoo/:zooId/camera" element={<CameraDetail />} />
           <Route path="/edit-camera/:id" element={<EditCamera />} />
           <Route path="/CameraDetail" element={<CameraDetail />} />
+            
         </Route>
       </Routes>
     </BrowserRouter>
