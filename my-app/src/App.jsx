@@ -25,6 +25,7 @@ function App() {
           <Route path="AddCamera" element={<AddCamera />} />
           <Route path="zoo/:id" element={<ZooDetail />} />
           <Route path="zoo/:zooId/camera" element={<CameraDetail />} />
+          
 
 
         </Route>
