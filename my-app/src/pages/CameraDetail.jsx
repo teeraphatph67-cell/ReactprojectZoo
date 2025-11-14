@@ -99,15 +99,21 @@ export default function CameraDetail() {
           🦓 กำลังโหลดข้อมูลกล้อง...
         </div>
       ) : err ? (
-        <div className="text-red-600 text-center mt-20 font-semibold">{err}</div>
+        <div className="text-red-600 text-center mt-20 font-semibold">
+          {err}
+        </div>
       ) : (
         <>
           <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            {selectedZoo ? `กล้องในสวนสัตว์ ${selectedZoo.name}` : `ID สวนสัตว์ ${zooId}`}
+            {selectedZoo
+              ? `กล้องในสวนสัตว์ ${selectedZoo.name}`
+              : `ID สวนสัตว์ ${zooId}`}
           </h1>
 
           {filteredCameras.length === 0 ? (
-            <p className="text-gray-500 text-center text-lg">ไม่มีกล้องในสวนสัตว์นี้</p>
+            <p className="text-gray-500 text-center text-lg">
+              ไม่มีกล้องในสวนสัตว์นี้
+            </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCameras.map((cam) => (
@@ -118,9 +124,12 @@ export default function CameraDetail() {
                   <div className="space-y-2">
                     <div className="font-semibold text-gray-800 text-lg">
                       <div className="text-gray-600 text-lg">
-                        ชื่อสวนสัตว์: {selectedZoo?.name ?? "-"}
+                        ชื่อสวนสัตว์:{" "}
+                        {zoos.find((z) => String(z.id) === String(cam.zoo_id))
+                          ?.name || "-"}
                       </div>
-                      ตำแหน่งกล้องตัวที่: {cam.camera_position || "ตำแหน่งไม่ระบุ"}
+                      ตำแหน่งกล้องตัวที่:{" "}
+                      {cam.camera_position || "ตำแหน่งไม่ระบุ"}
                       <div className="text-gray-400 text-xs mt-2">
                         IP: {cam.ip_address || "-"}
                       </div>
@@ -135,7 +144,8 @@ export default function CameraDetail() {
                     )}
                     {cam.updated_at && (
                       <div className="text-gray-400 text-xs">
-                        อัปเดตล่าสุด: {new Date(cam.updated_at).toLocaleDateString()}
+                        อัปเดตล่าสุด:{" "}
+                        {new Date(cam.updated_at).toLocaleDateString()}
                       </div>
                     )}
                   </div>

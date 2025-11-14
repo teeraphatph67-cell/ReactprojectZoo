@@ -80,7 +80,7 @@ export default function Navbar() {
                         <div className="text-gray-800 font-semibold text-sm">
                           User : {user.user_profile.first_name} {user.user_profile.last_name}
                         </div>
-                        <div className="text-xs text-gray-500"> position : {isAdmin ? "Admin" : "User"}</div>
+                        <div className="text-gray-800 font-semibold text-sm"> position : {isAdmin ? "Admin" : "User"}</div>
                       </div>
                     </MenuButton>
                     <MenuItems className="absolute right-0 mt-2 w-48 rounded-lg bg-white shadow-md ring-1 ring-gray-200">
