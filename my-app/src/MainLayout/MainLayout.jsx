@@ -15,10 +15,10 @@ export default function MainLayout() {
   const user = JSON.parse(localStorage.getItem("user"));
   const apiKey = localStorage.getItem("api_key");
 
-  const LOGOUT_AFTER = 30 * 60 * 1000; // 2 นาทีตัวอย่าง
+  const LOGOUT_AFTER = 30 * 60 * 1000; // 30 นาที
   const [timeLeft, setTimeLeft] = useState(0);
 
-  const intervalRef = useRef(null); // เก็บ interval เพื่อ clear ปลอดภัย
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     if (!user || !apiKey) {
@@ -26,7 +26,6 @@ export default function MainLayout() {
       return;
     }
 
-    // สร้าง logoutTime แค่ครั้งแรก (ไม่รีเซ็ตเมื่อ F5)
     if (!localStorage.getItem("logoutTime")) {
       localStorage.setItem(
         "logoutTime",
@@ -49,10 +48,9 @@ export default function MainLayout() {
       }
     };
 
-    updateTime(); // เรียกครั้งแรกทันที
+    updateTime();
     intervalRef.current = setInterval(updateTime, 1000);
 
-    // ฟังก์ชัน reset logoutTime เมื่อ user interaction
     const resetTimer = () => {
       const newLogoutTime = new Date().getTime() + LOGOUT_AFTER;
       localStorage.setItem("logoutTime", newLogoutTime.toString());
@@ -67,22 +65,33 @@ export default function MainLayout() {
     };
   }, [user, apiKey, navigate]);
 
-  // แปลงวินาที → mm:ss
   const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, "0");
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 relative">
+    <div className="min-h-screen bg-sky-50 relative">
       <Navbar />
 
       {/* Countdown Logout */}
-      <div>
-        ⏰ Logout in: {formatTime(timeLeft)}
+      <div className="fixed top-16 right-6 bg-white/90 backdrop-blur-sm shadow-lg rounded-xl px-4 py-2 flex items-center gap-3 z-50 border border-gray-200">
+        <span className="material-icons text-blue-500">schedule</span>
+        <span className="text-gray-700 text-sm font-medium">
+          Logout ในอีก {formatTime(timeLeft)}
+        </span>
+        <div
+          className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden"
+          title="Progress"
+        >
+          <div
+            className="h-2 bg-blue-500 rounded-full transition-all duration-500"
+            style={{
+              width: `${((30 * 60 - timeLeft) / (30 * 60)) * 100}%`,
+            }}
+          />
+        </div>
       </div>
 
       {/* Main content */}
